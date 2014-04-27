@@ -1,0 +1,14 @@
+[ {
+  "id" : "52bab833-e024-4f15-b927-8e0772d1540c",
+  "name" : "recover_password",
+  "doc" : "Recover password (which is different from Reset password).",
+  "metadata" : "password_23433253254"
+}, {
+  "id" : "52bab833-9a1e-4bff-b659-99ee95e6c1f9",
+  "name" : "transfer",
+  "doc" : "Transfer some amount of money between two accounts."
+}, {
+  "id" : "52bab833-3e23-4c67-9cfc-a0fed605bd77",
+  "name" : "show_movie",
+  "doc" : "Show a given movie."
+} ]
