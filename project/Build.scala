@@ -8,7 +8,7 @@ object BuildSettings {
     version := "0.1",
     scalacOptions ++= Seq(),
     scalaVersion := "2.10.4",
-    crossScalaVersions := Seq("2.10.2", "2.10.3", "2.10.4", "2.11.0"),
+    crossScalaVersions := Seq("2.10.2", "2.10.3", "2.10.4"),
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
