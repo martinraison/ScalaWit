@@ -22,27 +22,34 @@ class Client(token: String) {
   )
 
   def httpGet[T](path: Seq[String], params: Map[String, String] = Map())(implicit reads: Reads[T]): Future[Either[WitError, T]] = {
-    val request = makeUrl(path) <<? params <:< defaultHeaders secure
-    val resultFut = Http(request OK as.String).either
-    resultFut.map {
-      _.fold(ex => Left(WitError.getWitError(ex)),
-        content => Json.parse(content).asOpt[T].map(Right(_)).getOrElse(Left(WitResponseParsingError(content))))
-    }
+    httpRequest[T](makeUrl(path) <<? params)
+  }
+
+  def httpGetRaw(path: Seq[String], params: Map[String, String] = Map()): Future[Either[WitError, String]] = {
+    httpRequestRaw(makeUrl(path) <<? params)
   }
 
   def httpPost[T](path: Seq[String], data: T)(implicit writes: Writes[T]): Future[Either[WitError, String]] = {
-    httpAction(makeUrl(path).POST << Json.toJson(data).toString)
+    httpRequestRaw(makeUrl(path).POST << Json.toJson(data).toString)
   }
 
   def httpPut[T](path: Seq[String], data: T)(implicit writes: Writes[T]): Future[Either[WitError, String]] = {
-    httpAction(makeUrl(path).PUT << Json.toJson(data).toString)
+    httpRequestRaw(makeUrl(path).PUT << Json.toJson(data).toString)
   }
 
   def httpDelete(path: Seq[String]): Future[Either[WitError, String]] = {
-    httpAction(makeUrl(path).DELETE)
+    httpRequestRaw(makeUrl(path).DELETE)
   }
 
-  def httpPostAudio(stream: AudioInputStream): Future[Either[WitError, String]] = {
+  def httpPostAudio[T](stream: AudioInputStream)(implicit reads: Reads[T]): Future[Either[WitError, T]] = {
+    sendAudioRequest[T](stream, httpRequest[T] _)
+  }
+
+  def httpPostAudioRaw(stream: AudioInputStream): Future[Either[WitError, String]] = {
+    sendAudioRequest[String](stream, httpRequestRaw _)
+  }
+
+  private def sendAudioRequest[T](stream: AudioInputStream, f: (Req, Map[String,String]) => Future[Either[WitError, T]]): Future[Either[WitError, T]] = {
     val format = stream.getFormat()
     val encoding = audioEncodingNames.get(format.getEncoding()).getOrElse(return Future(Left(WitMalformedRequestError("unsupported audio encoding"))))
     val bits = format.getSampleSizeInBits()
@@ -55,13 +62,22 @@ class Client(token: String) {
       "Accept" -> s"application/vnd.wit.${Config.API_VERSION}"
     )
     val request = makeUrl(Seq("speech")).POST.underlying(_.setBody(new InputStreamBodyGenerator(stream)))
-    httpAction(request, headers)
+    f(request, headers)
   }
 
-  private def httpAction(request: Req, headers: Map[String, String] = defaultHeaders): Future[Either[WitError, String]] = {
+  private def httpRequestRaw(request: Req, headers: Map[String, String] = defaultHeaders): Future[Either[WitError, String]] = {
     val completeRequest = request <:< headers secure
     val resultFut = Http(completeRequest OK as.String).either
     resultFut.map { _.fold(ex => Left(WitError.getWitError(ex)), Right(_)) }
+  }
+
+  private def httpRequest[T](request: Req, headers: Map[String, String] = defaultHeaders)(implicit reads: Reads[T]): Future[Either[WitError, T]] = {
+    val completeRequest = request <:< headers secure
+    val resultFut = Http(completeRequest OK as.String).either
+    resultFut.map {
+      _.fold(ex => Left(WitError.getWitError(ex)),
+        content => Json.parse(content).asOpt[T].map(Right(_)).getOrElse(Left(WitResponseParsingError(content))))
+    }
   }
 
   private def makeUrl(path: Seq[String]): Req = path.foldLeft(witHost)(_ / _)

@@ -3,9 +3,9 @@ package com.scalawit
 import dispatch._
 import play.api.libs.json._
 import javax.sound.sampled._
-import scala.text.Document
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class Wit(token: String) {
+class WitClient(token: String) {
 
   private val client = new Client(token)
 
@@ -14,11 +14,11 @@ class Wit(token: String) {
   }
 
   def getMessageRaw(message: String, id: Option[String] = None, context: Option[WitContext] = None): Future[Either[WitError, String]] = {
-    client.httpGet[String](Seq("message"), paramsForGetMessage(message, id, context))
+    client.httpGetRaw(Seq("message"), paramsForGetMessage(message, id, context))
   }
 
-  def postSpeech(stream: AudioInputStream): Future[Either[WitError, String]] = {
-    client.httpPostAudio(stream)
+  def postSpeech(stream: AudioInputStream): Future[Either[WitError, WitMessage]] = {
+    client.httpPostAudio[WitMessage](stream)
   }
 
   def getMessageById(id: String): Future[Either[WitError, WitMessage]] = {
@@ -26,7 +26,7 @@ class Wit(token: String) {
   }
 
   def getMessageByIdRaw(id: String): Future[Either[WitError, String]] = {
-    client.httpGet[String](Seq("messages", id))
+    client.httpGetRaw(Seq("messages", id))
   }
 
   def getIntents: Future[Either[WitError, Seq[WitIntent]]] = {
@@ -34,16 +34,11 @@ class Wit(token: String) {
   }
 
   def getIntentsRaw: Future[Either[WitError, String]] = {
-    client.httpGet[String](Seq("intents"))
+    client.httpGetRaw(Seq("intents"))
   }
 
-  // todo: check return type
-  def getCorpus: Future[Either[WitError, Seq[WitExpression]]] = {
-    client.httpGet[Seq[WitExpression]](Seq("corpus"))
-  }
-
-  def getCorpusRaw: Future[Either[WitError, String]] = {
-    client.httpGet[String](Seq("corpus"))
+  def getCorpus: Future[Either[WitError, Seq[String]]] = {
+    client.httpGetRaw(Seq("corpus")) map { _.right.map(_.split("\n")) }
   }
 
   def getEntities: Future[Either[WitError, Seq[String]]] = {
@@ -51,7 +46,7 @@ class Wit(token: String) {
   }
 
   def getEntitiesRaw: Future[Either[WitError, String]] = {
-    client.httpGet[String](Seq("entities"))
+    client.httpGetRaw(Seq("entities"))
   }
 
   def getEntity(id: String): Future[Either[WitError, WitEntityDescription]] = {
@@ -59,7 +54,7 @@ class Wit(token: String) {
   }
 
   def getEntityRaw(id: String): Future[Either[WitError, String]] = {
-    client.httpGet[String](Seq("entities", id))
+    client.httpGetRaw(Seq("entities", id))
   }
 
   def postEntity(entityDescription: WitEntityDescription): Future[Either[WitError, String]] = {
@@ -98,11 +93,16 @@ class Wit(token: String) {
     )
     paramOpts.flatten.foldLeft(Map.empty[String, String])(_ + _)
   }
-  // todo: doc
 }
 
 object Wit {
+  type Wit = WitClient
+
   // Pretty printing
   def pretty[T](obj: Printable[T]) = obj.pretty
-  implicit def pretty(obj: Seq[Printable[_]]) = Printable.pretty(Printable.getDocumentForSeq(obj))
+
+  implicit def traversableToWitTraversable[T](seq: Traversable[T]) = new WitTraversable(seq)
+  class WitTraversable[T](seq: Traversable[T]) {
+    def pretty = Printable.pretty(Printable.getDocumentForTraversable(seq))
+  }
 }
