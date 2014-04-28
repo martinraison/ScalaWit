@@ -1,17 +1,31 @@
 [![Build Status](https://travis-ci.org/martinraison/ScalaWit.png)](https://travis-ci.org/martinraison/ScalaWit)
+
+*NOTE: This project needs testing, use at your own risk*
 ScalaWit
 ========
 
-Scala client for Wit.AI
+Scala client for [Wit.AI](http://www.wit.ai)
 
 What this client can do for you:
 
 * Handle HTTP asynchronous requests to Wit.AI
 * Parse the JSON response and give you nice Scala objects to play with
 
+## Setup
+
+No packaged `*.jar` for this project yet. In the meantime:
+* `git clone https://github.com/martinraison/ScalaWit.git; cd ScalaWit; sbt assembly`
+* Add the resulting `core/target/scala-2.10/core-assembly-0.1.jar` to your project's classpath.
+
+## Usage
+
+Documentation is on its way :) To get started, you should have a look at:
+* the examples below
+* the client methods in [Wit.scala](https://github.com/martinraison/ScalaWit/blob/master/core/src/main/scala/com/scalawit/Wit.scala) - they mirror the official API pretty closely
+* the data structures in [Models.scala](https://github.com/martinraison/ScalaWit/blob/master/core/src/main/scala/com/scalawit/Models.scala) - `WitMessage`, `WitIntent`, `WitExpression`, `WitEntity`, etc. Note that most API methods (`getMessage`, `getIntents`, `getEntities`, etc) also have a `***Raw` version that you can use if you just want the JSON string returned by the server.
+
 ## Examples
 
-Documentation is on its way, in the meantime the API calls in [Wit.scala](https://github.com/martinraison/ScalaWit/blob/master/core/src/main/scala/com/scalawit/Wit.scala) should give you a pretty good idea of how to use this client.
 
 ###Creating the client (+ imports):
 ```bash
@@ -66,7 +80,7 @@ scala> intents.right.get.pretty
 The [Wit.AI API](https://wit.ai/docs/api) will likely be updated faster than this client.
 Suggestions and pull requests welcome!
 
-You're also welcome to submit an issue/pull request if you see JSON responses not being parsed correctly (failure or missing fields). Note that API calls also provide "-Raw" versions, which bypass parsing and just return a JSON string.
+You're also welcome to submit an issue/pull request if you see JSON responses not being parsed correctly (failure or missing fields). Remember you can always use the `***Raw` versions of the client methods to bypass parsing and just return a JSON string.
 
 ## License
 
@@ -91,4 +105,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-24

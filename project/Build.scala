@@ -25,7 +25,7 @@ object MyBuild extends Build {
     settings = buildSettings ++ Seq(
       run <<= run in Compile in core
     )
-  ) aggregate(macros, core)
+  ) aggregate(core)
 
   lazy val macros: Project = Project(
     "macros",
@@ -42,7 +42,7 @@ object MyBuild extends Build {
   lazy val core: Project = Project(
     "core",
     file("core"),
-    settings = buildSettings ++ Seq(
+    settings = buildSettings ++ sbtassembly.Plugin.assemblySettings ++ Seq(
       libraryDependencies ++= Seq(
         "org.scalatest" %% "scalatest" % "2.1.4" % "test",
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
