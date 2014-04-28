@@ -9,7 +9,10 @@ case class WitContext(
   states: Option[Seq[String]] = None,
   referenceTime: Option[DateTime] = Some(new DateTime()),
   timezone: Option[String] = None,
-  entities: Option[Seq[WitEntityDescription]] = None)
+  entities: Option[Seq[WitEntityDescription]] = None) extends Printable[WitContext] {
+  override def getMappable = implicitly[Mappable[WitContext]]
+  override def getLabel: String = "Context"
+}
 
 object WitContext {
   implicit val writesWitContext: Writes[WitContext] = (
@@ -23,7 +26,10 @@ object WitContext {
 case class WitMessage(
   msgId: String,
   msgBody: String,
-  outcome: Option[WitOutcome])
+  outcome: Option[WitOutcome]) extends Printable[WitMessage] {
+  override def getMappable = implicitly[Mappable[WitMessage]]
+  override def getLabel: String = "Message"
+}
 
 object WitMessage {
   implicit val readsWitMessage: Reads[WitMessage] = (
@@ -36,7 +42,10 @@ object WitMessage {
 case class WitOutcome(
   intent: String,
   entities: Seq[WitEntity],
-  confidence: Double)
+  confidence: Double) extends Printable[WitOutcome] {
+  override def getMappable = implicitly[Mappable[WitOutcome]]
+  override def getLabel: String = "Outcome"
+}
 
 object WitOutcome {
   implicit val readsWitOutcome: Reads[WitOutcome] = (
@@ -58,7 +67,10 @@ case class WitIntent(
   doc: String,
   metadata: Option[String],
   entities: Option[Seq[WitEntity]],
-  expression: Option[Seq[WitExpression]])
+  expression: Option[Seq[WitExpression]]) extends Printable[WitIntent] {
+  override def getMappable = implicitly[Mappable[WitIntent]]
+  override def getLabel: String = "Intent"
+}
 
 object WitIntent {
   implicit val readsWitIntent: Reads[WitIntent] = (
@@ -69,7 +81,6 @@ object WitIntent {
     (__ \ 'entities).readNullable[Seq[WitEntity]] and
     (__ \ 'expressions).readNullable[Seq[WitExpression]]
     )(WitIntent.apply _)
-
 }
 
 case class WitEntity(
@@ -82,7 +93,10 @@ case class WitEntity(
   end: Option[Int],
   body: Option[String],
   metadata: Option[String],
-  suggested: Option[Boolean])
+  suggested: Option[Boolean]) extends Printable[WitEntity] {
+  override def getMappable = implicitly[Mappable[WitEntity]]
+  override def getLabel: String = "Entity"
+}
 
 object WitEntity {
   implicit val readsWitEntity: Reads[WitEntity] = (
@@ -94,7 +108,10 @@ case class WitEntityDescription(
   id: String,
   doc: String,
   values: Seq[WitEntityValue],
-  builtin: Boolean = false)
+  builtin: Boolean = false) extends Printable[WitEntityDescription] {
+  override def getMappable = implicitly[Mappable[WitEntityDescription]]
+  override def getLabel: String = "Description"
+}
 
 object WitEntityDescription {
   implicit val readsWitEntityDescription: Reads[WitEntityDescription] = (
@@ -113,7 +130,10 @@ object WitEntityDescription {
 case class WitEntityValue(
   value: String,
   expressions: Seq[String],
-  metadata: Option[String])
+  metadata: Option[String]) extends Printable[WitEntityValue] {
+  override def getMappable = implicitly[Mappable[WitEntityValue]]
+  override def getLabel: String = "Entity"
+}
 
 object WitEntityValue {
   implicit val formatWitEntityValue: Format[WitEntityValue] = (
@@ -126,7 +146,10 @@ object WitEntityValue {
 case class WitExpression(
   id: String,
   body: String,
-  entities: Seq[WitEntity])
+  entities: Seq[WitEntity]) extends Printable[WitExpression] {
+  override def getMappable = implicitly[Mappable[WitExpression]]
+  override def getLabel: String = "Expression"
+}
 
 object WitExpression {
   implicit val readsWitExpression: Reads[WitExpression] = (
@@ -136,7 +159,10 @@ object WitExpression {
     )(WitExpression.apply _)
 }
 
-case class WitExpressionDescription(expression: String)
+case class WitExpressionDescription(expression: String) extends Printable[WitExpressionDescription] {
+  override def getMappable = implicitly[Mappable[WitExpressionDescription]]
+  override def getLabel: String = "Expression"
+}
 object WitExpressionDescription {
   implicit val writesWitExpressionDescription = Json.writes[WitExpressionDescription] // only works because the field name is "expression"
 }

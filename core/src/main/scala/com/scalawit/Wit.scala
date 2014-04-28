@@ -2,6 +2,8 @@ package com.scalawit
 
 import dispatch._
 import play.api.libs.json._
+import javax.sound.sampled._
+import scala.text.Document
 
 class Wit(token: String) {
 
@@ -15,7 +17,9 @@ class Wit(token: String) {
     client.httpGet[String](Seq("message"), paramsForGetMessage(message, id, context))
   }
 
-  def postSpeech() = ???
+  def postSpeech(stream: AudioInputStream): Future[Either[WitError, String]] = {
+    client.httpPostAudio(stream)
+  }
 
   def getMessageById(id: String): Future[Either[WitError, WitMessage]] = {
     client.httpGet[WitMessage](Seq("messages", id))
@@ -94,5 +98,11 @@ class Wit(token: String) {
     )
     paramOpts.flatten.foldLeft(Map.empty[String, String])(_ + _)
   }
-  // todo: doc, post speech
+  // todo: doc
+}
+
+object Wit {
+  // Pretty printing
+  def pretty[T](obj: Printable[T]) = obj.pretty
+  implicit def pretty(obj: Seq[Printable[_]]) = Printable.pretty(Printable.getDocumentForSeq(obj))
 }

@@ -8,7 +8,7 @@ import scala.io.Source
 class ScalaWitTest extends FlatSpec with Matchers {
 
   "Wit" should "parse response" in {
-    // Small coverage (only checks that parsing returns something)
+    // Minimal coverage (only checks that parsing returns something)
     val response1 = Source.fromFile("resources/response1.txt").mkString
     Json.parse(response1).asOpt[WitMessage] should be ('defined)
     val response2 = Source.fromFile("resources/response2.txt").mkString
